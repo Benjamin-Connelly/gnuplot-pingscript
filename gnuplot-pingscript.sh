@@ -12,16 +12,16 @@ function start() {
     
     if [ ! -d "${1}" ]
     then
-        getAddress $1
+        getAddress "$1"
         createDirs
-        startPing $2 $3
+        startPing "$2" "$3"
         
         runSed
-        runGNUPlot $4 $5 $6
+        runGNUPlot "$4" "$5" "$6"
     else
         sessionDataDir="$1"
         runSed
-        runGNUPlot $2 $3 $4
+        runGNUPlot "$2" "$3" "$4"
     fi
 
     echo "Finished."
@@ -35,13 +35,15 @@ function printInit() {
 
 function checkDeps() {
 
-    local plot=$(whereis gnuplot)
+    local plot
+    plot="$(whereis gnuplot)"
     if [ "${plot}" == "gnuplot:" ]
     then
         echo "Please install gnuplot and/or make sure it is on your PATH"
     fi
 
-    local sed=$(whereis sed)
+    local sed
+    sed="$(whereis sed)"
     if [ "${sed}" == "sed:" ]
     then
         echo "Please install sed and/or make sure it is on your PATH"
@@ -54,7 +56,7 @@ function getAddress() {
     if [ -z "${address}" ]
     then
         echo "Please enter the address/IP you want to ping (Default: google.com):"
-        read address
+        read -r address
         if [ -z "${address}" ]
         then
             address="google.com"
@@ -80,7 +82,7 @@ function startPing() {
     if [ -z "${interval}" ]
     then
         echo "Please enter the interval for the ping (Default: 0.2):"
-        read interval
+        read -r interval
         if [ -z "${interval}" ]
         then
             interval="0.2"
@@ -91,7 +93,7 @@ function startPing() {
     if [ -z "${count}" ]
     then
         echo "Please enter the ping count (Default: 2000):"
-        read count
+        read -r count
         if [ -z "${count}" ]
         then
             count="2000"
@@ -99,11 +101,11 @@ function startPing() {
     fi
 
     echo "Running ping ..."
-    if [ 1 -eq $(echo "${interval} < 0.2" | bc) ]
+    if [ 1 -eq "$(echo "${interval} < 0.2" | bc)" ]
     then
         echo "Asking for root permissions to ping that fast ..."
         local user=${USER}
-        sudo ping -D -i ${interval} -c ${count} ${address} > "${sessionDataDir}/ping.txt"
+        sudo ping -D -i ${interval} -c ${count} ${address} | sudo tee "${sessionDataDir}/ping.txt"
         sudo chown "${user}:${user}" "${sessionDataDir}/ping.txt"
     else
         ping -D -i ${interval} -c ${count} ${address} > "${sessionDataDir}/ping.txt"
@@ -118,20 +120,20 @@ s/time=/time= /g
 s/^[^\[]/#&/g
 EOF
 
-    sed -f ${dataDir}/sed.cfg ${sessionDataDir}/ping.txt > ${sessionDataDir}/processed.txt
+    sed -f ${dataDir}/sed.cfg "${sessionDataDir}"/ping.txt > "${sessionDataDir}"/processed.txt
 
-    grep -v '#' ${sessionDataDir}/processed.txt > ${sessionDataDir}/processed-cached.txt
-    mv ${sessionDataDir}/processed-cached.txt ${sessionDataDir}/processed.txt
+    grep -v '#' "${sessionDataDir}"/processed.txt > "${sessionDataDir}"/processed-cached.txt
+    mv "${sessionDataDir}"/processed-cached.txt "${sessionDataDir}"/processed.txt
 
-    if [ -eq $(sed -n '1{p;q}' ${sessionDataDir}/processed.txt | cut -d' ' -f 10) "ms" ]
+    if [[ "$(sed -n '1{p;q}' "${sessionDataDir}"/processed.txt | cut -d' ' -f 10) "ms"" ]];
     then
-        cat ${sessionDataDir}/processed.txt | cut -d' ' -f 1,9 > ${sessionDataDir}/processed-cached.txt
+        cat "${sessionDataDir}"/processed.txt | cut -d' ' -f 1,9 > "${sessionDataDir}"/processed-cached.txt
     else
-        cat ${sessionDataDir}/processed.txt | cut -d' ' -f 1,10 > ${sessionDataDir}/processed-cached.txt
+        cat "${sessionDataDir}"/processed.txt | cut -d' ' -f 1,10 > "${sessionDataDir}"/processed-cached.txt
     fi
-    mv ${sessionDataDir}/processed-cached.txt ${sessionDataDir}/processed.txt
+    mv "${sessionDataDir}"/processed-cached.txt "${sessionDataDir}"/processed.txt
 
-    rm ${dataDir}/sed.cfg
+    rm "${dataDir}"/sed.cfg
 }
 
 function runGNUPlot {
@@ -162,7 +164,7 @@ EOF
     if [ -z "${rangey}" ]
     then
         echo "Please enter where the plot should start from (Y-Axis)(Default: 0):"
-        read rangey
+        read -r rangey
         if [ -z "${rangey}" ]
         then
             rangey="0"
@@ -175,7 +177,7 @@ EOF
     if [ -z "${sizey}" ]
     then
         echo "Please enter the png height (Default: 720):"
-        read sizey
+        read -r sizey
         if [ -z "${sizey}" ]
         then
             sizey="720"
@@ -188,7 +190,7 @@ EOF
     if [ -z "${sizex}" ]
     then
         echo "Please enter the png width (Default: 1280):"
-        read sizex
+        read -r sizex
         if [ -z "${sizex}" ]
         then
             sizex="1280"
@@ -208,4 +210,5 @@ EOF
     rm ${dataDir}/gnuplot.cfg
 }
 
-start $1 $2 $3 $4 $5 $6
+start "$1" "$2" "$3" "$4" "$5" "$6"
+
