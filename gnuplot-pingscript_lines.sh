@@ -1,5 +1,6 @@
 #!/bin/bash
 # GNUPlot pingscript by Benjamin Klettbach (b<dot>klettbach<at>gmail<dot>com)
+# Forked, fixed, and updated by Benjamin Connelly  (benjamin<dot>t<dot>connelly<at>gmail<dot>com)
 
 dataDir="gnuplot-pingscript-data"
 
